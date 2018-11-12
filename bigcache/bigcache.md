@@ -1,8 +1,8 @@
 ### bigcache研究
 #### 类图
-![uml](https://github.com/tfbrother/tfcache/bigcache/blob/dev/uml.png?raw=true)
+![uml](https://github.com/tfbrother/tfcache/bigcache/blob/master/uml.png?raw=true)
 #### 调用图
-![gateway](https://github.com/tfbrother/tfcache/bigcache/blob/dev/call.png?raw=true)
+![call](https://github.com/tfbrother/tfcache/bigcache/blob/master/call.png?raw=true)
 #### 主要功能
 - Get/Set/淘汰
 #### 缓存项存储格式
