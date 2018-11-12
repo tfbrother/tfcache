@@ -8,6 +8,6 @@ key value cache, written by golang
   - map里面加入新元素会导致动态的内存分配
   - 假设map里面有100万+条数据的时候，频繁的加锁会导致性能差
   - 假设map里面100万+条数据时，动态增加元素性能差
-* 非线程安全的
+* ~~非线程安全的~~
 
 [参考设计](bigcache/bigcache.md)
