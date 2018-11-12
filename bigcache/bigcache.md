@@ -7,6 +7,7 @@
 - Get/Set/淘汰
 #### 缓存项存储格式
 采用字节队列（数组）来存储缓存数据。一个缓存项在字节队列中对应的存储格式如下：
+
 |headerEntrySize|timestamp|hashedKey|keyLength|key|entry|
 | --- | --- | --- | --- | --- | --- |
 | 4个字节 | 8个字节 | 8个字节 | 2个字节 | x个字节 | y个字节 |
