@@ -1,41 +1,64 @@
 package tfcache
 
 import (
+	"container/list"
 	"errors"
 	"sync"
 )
 
-type Tfcache struct {
-	cache map[string]interface{}
-	mu    sync.RWMutex
+// 采用LRU算法
+type Cache struct {
+	cache    map[string]*list.Element
+	mu       sync.RWMutex
+	num      int32 // 当前缓存中的key数量
+	numLimit int32 // 设置缓存中的key最大数量
+	ll       *list.List
 }
 
 // 设置缓存
-func (c *Tfcache) Set(key string, value interface{}) (err error) {
+func (c *Cache) Set(key string, value interface{}) (err error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	// key已经存在
+	// key已经存在，移动到链表头部
 	if _, ok := c.cache[key]; ok {
-		return errors.New("key has exist！！！")
+		var aa *list.Element
+		c.ll.MoveToFront(aa)
+		//return errors.New("key has exist！！！")
 	}
-	c.cache[key] = value
+
+	// 超过了容量限制，则删除该元素，同时淘汰掉链表末尾的元素
+	if c.num >= c.numLimit {
+		c.num--
+		c.ll.Remove(c.ll.Back())
+		delete(c.cache, key)
+	}
+
+	// 放入头部
+	ele := c.ll.PushFront(value)
+	c.num++
+	c.cache[key] = ele
 	return nil
 }
 
 // 获取缓存
-func (c *Tfcache) Get(key string) (value interface{}, err error) {
+func (c *Cache) Get(key string) (value interface{}, err error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	var ok bool
-	if value, ok = c.cache[key]; ok {
+
+	if ele, ok := c.cache[key]; ok {
+		c.ll.MoveToFront(ele)
+		// 类型断言
+		value = ele.Value.(interface{})
 		return value, nil
 	}
 	return nil, errors.New("key not exist！！！")
 }
 
-func NewTfCache() (tf *Tfcache) {
-	tf = &Tfcache{
-		cache: make(map[string]interface{}),
+func NewCache() (tf *Cache) {
+	tf = &Cache{
+		cache:    make(map[string]*list.Element),
+		ll:       list.New(),
+		numLimit: 10, //默认设置容量限制在10，设置得比较小，是为了测试方便
 	}
 
 	return

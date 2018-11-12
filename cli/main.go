@@ -6,20 +6,20 @@ import (
 )
 
 var (
-	cache *tfcache.Tfcache = tfcache.NewTfCache()
+	cache *tfcache.Cache = tfcache.NewCache()
 	err   error
 	value interface{}
-	key   string
 )
 
 func main() {
-	key = "tfbrother"
-	if err = cache.Set(key, 22); err != nil {
-		fmt.Println(err, "111")
+	for i := 0; i < 20; i++ {
+		cache.Set(string(i), i)
 	}
-	if value, err = cache.Get("tfbrother"); err != nil {
-		fmt.Println(err, "222")
-	} else {
-		fmt.Println("key:", key, "value:", value)
+	for i := 0; i < 20; i++ {
+		if value, err = cache.Get(string(i)); err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Println("key:", string(i), "value:", value)
+		}
 	}
 }
