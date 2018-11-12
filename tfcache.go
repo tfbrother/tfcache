@@ -6,6 +6,11 @@ import (
 	"sync"
 )
 
+type item struct {
+	key   string
+	value interface{}
+}
+
 // 采用LRU算法
 type Cache struct {
 	cache    map[string]*list.Element
@@ -23,18 +28,19 @@ func (c *Cache) Set(key string, value interface{}) (err error) {
 	if _, ok := c.cache[key]; ok {
 		var aa *list.Element
 		c.ll.MoveToFront(aa)
-		//return errors.New("key has exist！！！")
 	}
 
 	// 超过了容量限制，则删除该元素，同时淘汰掉链表末尾的元素
 	if c.num >= c.numLimit {
 		c.num--
-		c.ll.Remove(c.ll.Back())
-		delete(c.cache, key)
+		ele := c.ll.Remove(c.ll.Back())
+		k := ele.(*item).key
+		// 链表中必须要把缓存的key存下来，否则
+		delete(c.cache, k)
 	}
 
 	// 放入头部
-	ele := c.ll.PushFront(value)
+	ele := c.ll.PushFront(&item{key, value})
 	c.num++
 	c.cache[key] = ele
 	return nil
@@ -48,7 +54,7 @@ func (c *Cache) Get(key string) (value interface{}, err error) {
 	if ele, ok := c.cache[key]; ok {
 		c.ll.MoveToFront(ele)
 		// 类型断言
-		value = ele.Value.(interface{})
+		value = ele.Value.(*item).value
 		return value, nil
 	}
 	return nil, errors.New("key not exist！！！")
