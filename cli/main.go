@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	cache *tfcache.Cache = tfcache.NewCache()
+	cache *tfcache.Cache = tfcache.NewCache(10) //限制缓存的最大数量
 	err   error
 	value interface{}
 )

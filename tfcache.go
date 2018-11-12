@@ -13,11 +13,11 @@ type item struct {
 
 // 采用LRU算法
 type Cache struct {
-	cache    map[string]*list.Element
-	mu       sync.RWMutex
-	num      int32 // 当前缓存中的key数量
-	numLimit int32 // 设置缓存中的key最大数量
-	ll       *list.List
+	cache  map[string]*list.Element
+	mu     sync.RWMutex
+	num    int // 当前缓存中的key数量
+	maxNum int // 设置缓存中的key最大数量
+	ll     *list.List
 }
 
 // 设置缓存
@@ -31,11 +31,11 @@ func (c *Cache) Set(key string, value interface{}) (err error) {
 	}
 
 	// 超过了容量限制，则删除该元素，同时淘汰掉链表末尾的元素
-	if c.num >= c.numLimit {
+	if c.num >= c.maxNum {
 		c.num--
 		ele := c.ll.Remove(c.ll.Back())
 		k := ele.(*item).key
-		// 链表中必须要把缓存的key存下来，否则
+		// 链表中必须要把缓存的key存下来，否则无法通过list中的元素找到对应缓存的key，实现删除map cache中对应key的功能
 		delete(c.cache, k)
 	}
 
@@ -60,11 +60,11 @@ func (c *Cache) Get(key string) (value interface{}, err error) {
 	return nil, errors.New("key not exist！！！")
 }
 
-func NewCache() (tf *Cache) {
+func NewCache(maxNum int) (tf *Cache) {
 	tf = &Cache{
-		cache:    make(map[string]*list.Element),
-		ll:       list.New(),
-		numLimit: 10, //默认设置容量限制在10，设置得比较小，是为了测试方便
+		cache:  make(map[string]*list.Element),
+		ll:     list.New(),
+		maxNum: maxNum, //默认设置容量限制在10，设置得比较小，是为了测试方便
 	}
 
 	return
