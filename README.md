@@ -21,4 +21,7 @@ key value cache, written by golang
 * 获取缓存时，移动元素到链表首部
 * 淘汰时就从链表的尾部开始来淘汰
 
-[参考设计](bigcache/bigcache.md)
+## 参考设计
+
+- [Bigcache](bigcache/bigcache.md)
+- [Groupcache](https://github.com/golang/groupcache)
