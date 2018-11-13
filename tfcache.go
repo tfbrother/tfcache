@@ -13,11 +13,12 @@ type item struct {
 
 // 采用LRU算法
 type Cache struct {
-	cache  map[string]*list.Element
-	mu     sync.RWMutex
-	num    int // 当前缓存中的key数量
-	maxNum int // 设置缓存中的key最大数量
-	ll     *list.List
+	cache              map[string]*list.Element
+	mu                 sync.RWMutex
+	num                int64 // 当前缓存中的key数量
+	maxNum             int64 // 设置缓存中的key最大数量
+	ll                 *list.List
+	nhit, nget, nevict int64
 }
 
 // 设置缓存
@@ -32,6 +33,7 @@ func (c *Cache) Set(key string, value interface{}) (err error) {
 
 	// 超过了容量限制，则删除该元素，同时淘汰掉链表末尾的元素
 	if c.num >= c.maxNum {
+		c.nevict++
 		c.num--
 		ele := c.ll.Remove(c.ll.Back())
 		k := ele.(*item).key
@@ -50,8 +52,9 @@ func (c *Cache) Set(key string, value interface{}) (err error) {
 func (c *Cache) Get(key string) (value interface{}, err error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-
+	c.nget++
 	if ele, ok := c.cache[key]; ok {
+		c.nhit++
 		c.ll.MoveToFront(ele)
 		// 类型断言
 		value = ele.Value.(*item).value
@@ -60,7 +63,20 @@ func (c *Cache) Get(key string) (value interface{}, err error) {
 	return nil, errors.New("key not exist！！！")
 }
 
-func NewCache(maxNum int) (tf *Cache) {
+func (c *Cache) Stats() CacheStats {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	return CacheStats{
+		Bytes:     0,
+		Items:     c.num,
+		Gets:      c.nget,
+		Hits:      c.nhit,
+		Evictions: c.nevict,
+	}
+}
+
+func NewCache(maxNum int64) (tf *Cache) {
 	tf = &Cache{
 		cache:  make(map[string]*list.Element),
 		ll:     list.New(),
@@ -68,4 +84,13 @@ func NewCache(maxNum int) (tf *Cache) {
 	}
 
 	return
+}
+
+// 缓存相关的统计信息
+type CacheStats struct {
+	Bytes     int64 // 内存占用
+	Items     int64 // 缓存项目数量
+	Gets      int64 // 请求数量
+	Hits      int64 // 命中数量
+	Evictions int64 // 淘汰数量
 }

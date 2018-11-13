@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/tfbrother/tfcache"
 	"strconv"
@@ -11,6 +13,20 @@ var (
 	err   error
 	value interface{}
 )
+
+//输出结构体
+func ToString(conf interface{}) string {
+	b, err := json.Marshal(conf)
+	if err != nil {
+		return fmt.Sprintf("%+v", conf)
+	}
+	var out bytes.Buffer
+	err = json.Indent(&out, b, "", "    ")
+	if err != nil {
+		return fmt.Sprintf("%+v", conf)
+	}
+	return out.String()
+}
 
 func main() {
 	for i := 0; i < 20; i++ {
@@ -24,4 +40,6 @@ func main() {
 			fmt.Println("key:", strconv.Itoa(i), "value:", value)
 		}
 	}
+	stats := cache.Stats()
+	fmt.Println(ToString(&stats))
 }
