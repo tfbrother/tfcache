@@ -26,9 +26,9 @@ func (c *Cache) Set(key string, value interface{}) (err error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	// key已经存在，移动到链表头部
-	if _, ok := c.cache[key]; ok {
-		var aa *list.Element
+	if aa, ok := c.cache[key]; ok {
 		c.ll.MoveToFront(aa)
+		return
 	}
 
 	// 超过了容量限制，则删除该元素，同时淘汰掉链表末尾的元素
