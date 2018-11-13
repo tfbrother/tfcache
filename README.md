@@ -13,6 +13,7 @@ key value cache, written by golang
 ### V0.11(2018-11-13)
 * 缓存管理采用LRU算法，支持容量限制--参考Groupcache
 * 支持相关统计信息(命中数，请求数，淘汰数，缓存总数)--参考Groupcache
+* 提供http接口用于set/get cache
 
 ## 算法说明
 ### LRU算法
