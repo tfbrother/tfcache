@@ -26,6 +26,10 @@ key value cache, written by golang
 * 获取缓存时，移动元素到链表首部
 * 淘汰时就从链表的尾部开始来淘汰
 
+### 一致性hash算法
+* 所有的缓存节点以及其虚拟节点形成一个圆环，根据节点hash值顺序排列成圆环
+* 对请求的key求hash值，找到在圆环中第一个大于该hash值的节点，就从该节点中取数据
+
 ## 参考设计
 
 - [Bigcache](bigcache/bigcache.md)
