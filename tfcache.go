@@ -3,8 +3,54 @@ package tfcache
 import (
 	"container/list"
 	"errors"
+	"github.com/tfbrother/tfcache/consistenthash"
 	"sync"
 )
+
+type Tfcache struct {
+	caches      []*Cache
+	maxShardNum int
+	peers       *consistenthash.Map
+}
+
+// 设置缓存
+func (b *Tfcache) Set(key string, value interface{}) (err error) {
+	index := b.peers.Get(key)
+	// debug
+	//log.Println("key=", key, ",index=", index)
+	return b.caches[index].Set(key, value)
+}
+
+// 获取缓存
+func (b *Tfcache) Get(key string) (value interface{}, err error) {
+	index := b.peers.Get(key)
+	//log.Println("key=", key, ",index=", index)
+	return b.caches[index].Get(key)
+}
+func (b *Tfcache) Stats(index int) CacheStats {
+	if index < len(b.caches) && index >= 0 {
+		return b.caches[index].Stats()
+	}
+
+	return CacheStats{}
+}
+
+func NewTfcache(shardNum int, maxNum int64) (b *Tfcache) {
+	b = &Tfcache{
+		peers:       consistenthash.New(10),
+		maxShardNum: shardNum,                 //默认设置容量限制在10，设置得比较小，是为了测试方便
+		caches:      make([]*Cache, shardNum), //slice必须要初始化
+	}
+
+	var peers []int
+	for i := 0; i < shardNum; i++ {
+		b.caches[i] = NewCache(maxNum / int64(shardNum))
+		peers = append(peers, i)
+	}
+
+	b.peers.Add(peers)
+	return
+}
 
 type item struct {
 	key   string

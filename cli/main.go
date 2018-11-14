@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	cache *tfcache.Cache = tfcache.NewCache(1500000) //限制缓存的最大数量
+	cache *tfcache.Tfcache = tfcache.NewTfcache(10, 20000000) //限制数量
 )
 
 //输出结构体
@@ -29,16 +29,16 @@ func ToString(conf interface{}) string {
 
 // 初始化cache
 func init() {
-	for i := 0; i < 2000000; i++ {
+	for i := 0; i < 20000000; i++ {
 		// 整型转字符串，不能直接使用string(i)，此时i会被当成ascii来对待
-		cache.Set(strconv.Itoa(i), i)
+		cache.Set(strconv.Itoa(i)+"tfbrother", i)
 	}
 }
 
 func main() {
 	go func() {
-		for i := 0; i < 2000000; i++ {
-			cache.Get(strconv.Itoa(i))
+		for i := 0; i < 20000000; i++ {
+			cache.Get(strconv.Itoa(i) + "tfbrother")
 		}
 	}()
 
@@ -49,10 +49,20 @@ func main() {
 	http.ListenAndServe("0.0.0.0:7777", nil)
 }
 
+// http://127.0.0.1:7777/stats?index=1
 func handleStats(resp http.ResponseWriter, req *http.Request) {
-	stats := cache.Stats()
+	var (
+		index int
+		err   error
+	)
 
-	resp.Write([]byte(ToString(&stats)))
+	if index, err = strconv.Atoi(req.URL.Query().Get("index")); err == nil {
+		stats := cache.Stats(index)
+		resp.Write([]byte(ToString(&stats)))
+		return
+	}
+
+	resp.Write([]byte("统计信息不存在"))
 }
 
 // 获取缓存
