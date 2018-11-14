@@ -39,7 +39,7 @@ func (m *Map) Get(key string) (node int) {
 
 	for _, v := range m.nodes {
 		if v >= hash {
-			return m.hashMap[hash]
+			return m.hashMap[v]
 		}
 	}
 
