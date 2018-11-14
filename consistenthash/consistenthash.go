@@ -2,8 +2,8 @@
 package consistenthash
 
 import (
-	"fmt"
 	"hash/crc32"
+	"log"
 	"sort"
 	"strconv"
 )
@@ -18,7 +18,7 @@ type Map struct {
 }
 
 // 添加节点
-func (m *Map) Add(nodes ...int) (err error) {
+func (m *Map) Add(nodes []int) (err error) {
 	for _, key := range nodes {
 		// 将key转换成string
 		keyStr := strconv.Itoa(int(key))
@@ -47,7 +47,7 @@ func (m *Map) Get(key string) (node int) {
 }
 
 func (m *Map) Dump() {
-	fmt.Println(m.nodes, m.hashMap)
+	log.Println(m.nodes, m.hashMap)
 }
 
 func New(replicas int) *Map {
